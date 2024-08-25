@@ -1,0 +1,85 @@
+if getgenv().tyrant then 
+    warn("tyranthub is already executed") 
+    return 
+end
+getgenv().tyrant = true
+
+--LPH_NO_VIRTUALIZE = LPH_NO_VIRTUALIZE or function(f)
+--    return f
+--end
+
+local debris = game:GetService("Debris")
+local contentProvider = game:GetService("ContentProvider")
+local scriptContext = game:GetService("ScriptContext")   
+local players = game:GetService("Players")
+local tweenService = game:GetService("TweenService")
+local statsService = game:GetService("Stats")
+local runService = game:GetService("RunService")
+local userInputService = game:GetService("UserInputService")
+local replicatedStorage = game:GetService("ReplicatedStorage")
+
+local player = players.LocalPlayer
+local mouse = player:GetMouse()
+local camera = workspace.CurrentCamera
+local values = replicatedStorage:FindFirstChild("Values")
+
+local IS_PRACTICE = game.PlaceId == 8206123457
+local IS_SOLARA = string.match(getexecutorname(), "Solara")
+local AC_BYPASS = false
+
+if not values or IS_PRACTICE then
+    if replicatedStorage:FindFirstChild("Values") then
+        replicatedStorage:FindFirstChild("Values"):Destroy()
+    end
+    values = Instance.new("Folder")
+    local status = Instance.new("StringValue")
+    status.Name = "Status"
+    status.Value = "InPlay"
+    status.Parent = values
+    values.Parent = replicatedStorage
+    values.Name = "Values"
+end
+
+loadstring([[
+    function LPH_NO_VIRTUALIZE(f) return f end;
+]])();
+
+LPH_NO_VIRTUALIZE(function()
+    if not getgenv().d and #({hookmetamethod, getnamecallmethod, getproto, getconstants, hookfunction, getprotos}) == 6 and 
+        (string.match(getexecutorname(), "Wave") or string.match(getexecutorname(), "Fluxus") or string.match(getexecutorname():lower(), "macsploit")) then
+        
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local Handshake = ReplicatedStorage.Remotes.CharacterSoundEvent
+        local Hooks = {}
+        local HandshakeInts = {}
+
+        Hooks.__namecall = hookmetamethod(game, "__namecall", function(self, ...)
+            local Method = getnamecallmethod()
+            local Args = {...}
+
+            if not checkcaller() and (self == Handshake) and (Method == "fireServer") and (string.find(Args[1], "AC")) then
+                if (#HandshakeInts == 0) then
+                    HandshakeInts = {table.unpack(Args[2], 2, 18)}
+                else
+                    for i, v in ipairs(HandshakeInts) do  
+                        Args[2][i + 1] = v
+                    end
+                end
+            end
+
+            return Hooks.__namecall(self, ...)
+        end)
+
+        task.wait()
+
+        for i, v in getgc() do
+            if typeof(v) == "function" and islclosure(v) then
+                if (#getprotos(v) == 1) and table.find(getconstants(getproto(v, 1)), 4000001) then
+                    hookfunction(v, function() end)
+                end
+            end
+        end
+
+        AC_BYPASS = true
+    end
+end)()
